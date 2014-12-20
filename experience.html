@@ -10,7 +10,7 @@
 		
 		<script>
 		
-		var screenWidth, screenHeight, ctx, particles=[];
+		var screenWidth, screenHeight, ctx, particles=[],fps=30,keys=[], speed=0.9;;
 
 			function fullScreenCanvas() {
 			
@@ -32,8 +32,35 @@
 				ctx=$("#canvas").get()[0].getContext("2d");
 		
 				init();
+				window.onkeydown=keyDownControl;
+				window.onkeyup=keyUpControl;
+				
 				fullScreenCanvas();
 			});
+			
+			function keyDownControl(e) {
+				keys[e.keyCode]=1;
+			
+			};
+			
+			function keyUpControl(e) {
+				
+				keys[e.keyCode]=0;
+			};
+			
+			function move() {
+			
+				if (keys[39] && speed<15)
+				{
+					speed+=0.1;
+				}
+				if (keys[37] && speed>2)
+				{
+					speed-=0.5;
+					
+				}
+			
+			}
 			
 			//particle object
 			function Particle(x,y) {
@@ -41,13 +68,13 @@
 				this.type="circle";
 				this.x=x;
 				this.y=y;
-				this.size=0.5;
-				this.opacity=rand(1,10);
-				this.moveSpeed=this.opacity/10 * 5;
+				this.size=rand(2,5)/10;
+				this.opacity=rand(1,3);
+				this.moveSpeed=this.opacity/10;
 			};
 			
 			Particle.prototype.draw=function() {
-				this.x-=this.moveSpeed;
+				this.x-=this.moveSpeed*speed;
 				if (this.x < 0) this.x=screenWidth;
 				ctx.save();
 				ctx.beginPath();
@@ -61,8 +88,8 @@
 			
 			function init() {
 				sizeIt();
-				for (i=0;i<500;i++)
-				particles.push(new Particle(rand(0,screenWidth),rand(0,screenHeight)));
+				for (i=0;i<4000;i++)
+				particles.push(new Particle(rand(0,1400),rand(0,1400)));
 					
 			
 			};
@@ -74,22 +101,42 @@
   				screenHeight=ctx.canvas.height;
 			}
 			
+			var op=0;
+			var op_speed=0.005/fps;
+			
+			var player={
+				x:500/2,
+				y:100
+			};
 			
 			setInterval(function draw() {
-				ctx.canvas.width  = window.innerWidth;
-  				ctx.canvas.height = window.innerHeight;
-  				screenWidth=ctx.canvas.width;
-  				screenHeight=ctx.canvas.height;
+				sizeIt();
+				move();
   				
 				ctx.save();
 				ctx.clearRect(0,0,screenWidth,screenHeight);
 				ctx.restore();
 				
+				op+=op_speed;
+				if (op<0.8)
+					$("#content").css({"opacity":op});
+				
+				
 				for (i in particles)
 					particles[i].draw();
+					
+				ctx.save();
+				ctx.fillStyle="white";
+				ctx.globalAlpha=0;
+				ctx.strokeStyle="black";
+				ctx.lineWidth="3px";
+				ctx.fillRect(player.x,player.y,50,50);
+				ctx.drawRect(player.x,player.y,50,50);
+				ctx.restore();
+				
 			
 			
-			}, 1000/30);
+			}, 1000/fps);
 		</script>
 		
 		<style>
@@ -143,6 +190,8 @@
 				margin-left:-100px;;
 				margin-top:-150px;
 				z-index:2;
+				text-align:left;
+				opacity:0;
 			
 			}
 		
@@ -161,11 +210,9 @@
 		The Hollow Boy
 		
 		</div>
-		
 		<audio autoplay>
 			<source src="experience_assets/thehollowboy.mp3" type="audio/mp3">
 		</audio>
-	
 	</body>
 	
 	
